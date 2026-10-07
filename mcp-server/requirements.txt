@@ -1,0 +1,2 @@
+# Matches the already-installed official SDK API used by server.py.
+mcp==2.2.0

@@ -1,0 +1,38 @@
+{
+  "Environment": "Production",
+  "EnvironmentId": "Production-Template",
+  "ApprovedInstances": [
+    "PROD-SQL-01",
+    "PROD-SQL-02",
+    "PROD-SQL-AOAG"
+  ],
+  "DefaultInstance": "PROD-SQL-01",
+  "TrustServerCertificate": false,
+  "BackupDirectory": "\\\\prod-backup-share.domain.local\\sqlbackups",
+  "ReportDirectory": "E:\\DBA\\Reports",
+  "LogDirectory": "E:\\DBA\\Logs",
+  "Thresholds": {
+    "BackupWarningHours": 24,
+    "DiskWarningPercentFree": 20.0,
+    "LongRunningQuerySeconds": 120,
+    "FailedJobsHours": 12
+  },
+  "Timeouts": {
+    "QueryTimeoutSeconds": 60,
+    "ConnectionTimeoutSeconds": 30
+  },
+  "ApprovedDatabases": [
+    "AppProductionDB"
+  ],
+  "ProtectedDatabases": [
+    "master",
+    "model",
+    "msdb",
+    "tempdb"
+  ],
+  "BackupPolicy": {
+    "Enabled": false,
+    "AllowedTypes": [],
+    "ApprovalRequired": true
+  }
+}

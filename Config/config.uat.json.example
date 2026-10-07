@@ -1,0 +1,36 @@
+{
+  "Environment": "UAT",
+  "EnvironmentId": "UAT",
+  "ApprovedInstances": [
+    "UAT-SQL-01"
+  ],
+  "DefaultInstance": "UAT-SQL-01",
+  "TrustServerCertificate": false,
+  "BackupDirectory": "\\\\uat-storage.example.invalid\\sqlbackups",
+  "ReportDirectory": "../Reports/UAT",
+  "LogDirectory": "../Logs/UAT",
+  "Thresholds": {
+    "BackupWarningHours": 24,
+    "DiskWarningPercentFree": 15.0,
+    "LongRunningQuerySeconds": 60,
+    "FailedJobsHours": 24
+  },
+  "Timeouts": {
+    "QueryTimeoutSeconds": 30,
+    "ConnectionTimeoutSeconds": 15
+  },
+  "ApprovedDatabases": [
+    "UatAppDB"
+  ],
+  "ProtectedDatabases": [
+    "master",
+    "model",
+    "msdb",
+    "tempdb"
+  ],
+  "BackupPolicy": {
+    "Enabled": false,
+    "AllowedTypes": [],
+    "ApprovalRequired": true
+  }
+}

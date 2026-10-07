@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/dba-ai-assistant/monitoring.evaluation.schema.json",
+  "title": "DBA Monitoring Evaluation Policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "SchemaVersion",
+    "DatabaseStateSeverity",
+    "DatabaseHealthSeverity",
+    "BackupAgeCriticalMultiplier",
+    "DiskFreeCriticalPercent",
+    "FailedJobsWarningCount",
+    "FailedJobsCriticalCount",
+    "BlockingWarningCount",
+    "BlockingCriticalCount",
+    "LongRunningQueryCriticalMultiplier"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "SchemaVersion": { "type": "integer", "const": 1 },
+    "DatabaseStateSeverity": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "enum": ["HEALTHY", "WARNING", "CRITICAL"] }
+    },
+    "DatabaseHealthSeverity": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "enum": ["HEALTHY", "WARNING", "CRITICAL"] }
+    },
+    "BackupAgeCriticalMultiplier": { "type": "number", "exclusiveMinimum": 1 },
+    "DiskFreeCriticalPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+    "FailedJobsWarningCount": { "type": "integer", "minimum": 1 },
+    "FailedJobsCriticalCount": { "type": "integer", "minimum": 1 },
+    "BlockingWarningCount": { "type": "integer", "minimum": 1 },
+    "BlockingCriticalCount": { "type": "integer", "minimum": 1 },
+    "LongRunningQueryCriticalMultiplier": { "type": "number", "exclusiveMinimum": 1 }
+  }
+}

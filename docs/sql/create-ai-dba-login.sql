@@ -1,0 +1,152 @@
+-- DOCUMENTATION / REFERENCE ONLY.
+-- This file is intentionally inert: every nonblank line is a SQL comment.
+-- Do not execute this file. It creates no login, user, role, or permission.
+-- A DBA must review and apply a separately approved, environment-specific plan.
+-- No password, secret, or credential value belongs in this project.
+--
+-- Identity model by environment:
+--   Development/Lab: one dedicated non-admin identity, restricted to lab hosts
+--     and approved lab databases. A Windows domain identity is preferred; use
+--     a lab-only SQL-authenticated login only if integrated authentication is
+--     unavailable and credentials are held outside this repository.
+--   Test/UAT: separate identity per environment (or separately scoped group),
+--     separate from Development and Production, with only that stage's approved
+--     database mappings.
+--   Production: a dedicated Active Directory service identity, preferably a
+--     gMSA where supported, using Windows integrated authentication. Do not
+--     reuse a human account, lab identity, SQL-auth password, or Production
+--     identity in lower environments.
+--
+-- Illustrative principal names below are examples only. Replace them with the
+-- approved environment identity and database names before review. Do not put
+-- a real password into a SQL file, PowerShell config, MCP tool argument, log,
+-- transcript, prompt, or source control.
+--
+-- Connection permissions:
+-- SQL Server normally grants CONNECT SQL to public, and CONNECT to public in
+-- user databases. Do not add explicit grants when the inherited permissions
+-- already allow the required connection. If an administrator has revoked
+-- those defaults, grant only CONNECT SQL and CONNECT in each approved user
+-- database as needed. These permissions grant no data access by themselves.
+-- Never grant sysadmin, serveradmin, securityadmin, CONTROL SERVER, or broad
+-- CONNECT ANY DATABASE for this automation.
+--
+-- Database mapping and read-only diagnostic scope:
+-- Repeat only for each ApprovedDatabases entry. The code now rejects system
+-- databases and any requested name outside that list before connecting, then
+-- confirms existence and passes only approved names to per-database queries.
+-- Map the identity only to those user databases. CONNECT permits the session;
+-- no table data read/write permission is granted by this template. Do not add
+-- VIEW ANY DATABASE, VIEW ANY DEFINITION, VIEW DATABASE STATE, db_datareader,
+-- or other grants unless a tested command/version demonstrates the need.
+-- USE [ApprovedLabDatabase];
+-- CREATE USER [DOMAIN\svc_ai_dba_dev] FOR LOGIN [DOMAIN\svc_ai_dba_dev];
+-- Reason: creates a database principal only in this selected approved user
+-- database. Add CONNECT only if the normal public grant has been revoked.
+-- Add metadata/object permissions only after permission testing demonstrates
+-- they are necessary for the deployed SQL Server/dbatools versions.
+-- Never add db_owner, db_datareader, or db_datawriter for monitoring.
+--
+-- Server-scoped DMV access for Get-OpsLongRunningQueries,
+-- Get-OpsBlockingSessions, and Get-OpsDiskSpace:
+-- These functions return active session/query information or volume stats.
+-- SQL Server 2019 and earlier require VIEW SERVER STATE; SQL Server 2022 and
+-- later require VIEW SERVER PERFORMANCE STATE for these performance DMVs.
+-- These server-scope grants provide visibility across the instance; the
+-- functions filter returned sessions/requests to ApprovedDatabases, but the
+-- permission itself cannot be limited to those databases. DMV queries require SELECT on the
+-- exact DMV/DMF object. The comments below show the narrow object grants used
+-- by the long-query and disk implementations; validate Get-DbaProcess's exact
+-- DMV needs for the deployed dbatools/engine versions before enabling blockers.
+-- USE [master];
+-- CREATE USER [DOMAIN\svc_ai_dba_dev] FOR LOGIN [DOMAIN\svc_ai_dba_dev];
+-- GRANT VIEW SERVER STATE TO [DOMAIN\svc_ai_dba_dev];
+-- -- For SQL Server 2022 and later, use this version-specific permission
+-- -- instead of VIEW SERVER STATE:
+-- GRANT VIEW SERVER PERFORMANCE STATE TO [DOMAIN\svc_ai_dba_dev];
+-- GRANT SELECT ON OBJECT::sys.dm_exec_requests TO [DOMAIN\svc_ai_dba_dev];
+-- GRANT SELECT ON OBJECT::sys.dm_exec_sessions TO [DOMAIN\svc_ai_dba_dev];
+-- GRANT SELECT ON OBJECT::sys.dm_exec_sql_text TO [DOMAIN\svc_ai_dba_dev];
+-- GRANT SELECT ON OBJECT::sys.dm_os_volume_stats TO [DOMAIN\svc_ai_dba_dev];
+-- Reason: allows the query-monitoring code to inspect active requests and
+-- statement text and per-database-file volume capacity/free-space information.
+-- Get-OpsDiskSpace reports only volumes containing approved database files;
+-- it does not assert that the configured backup directory is on one of them.
+-- This is sensitive, server-wide diagnostic visibility, not a database read
+-- grant. A database mapping does not narrow these server-state permissions.
+-- Choose exactly one state permission based on engine version; never both.
+--
+-- Per-function SQL scope:
+--   * Get-OpsDatabaseInventory: CONNECT and database catalog metadata for the
+--     approved databases. It no longer enumerates arbitrary databases.
+--   * Get-OpsDatabaseHealth: same database metadata; Get-DbaLastGoodCheckDb
+--     reads the SMO LastGoodCheckDbTime property on supported engines. No
+--     DBCC CHECKDB execution is performed by this function.
+--   * Get-OpsDatabaseSize: database file metadata in approved databases.
+--   * Get-OpsBackupStatus: approved database metadata plus read-only backup
+--     history from msdb via Get-DbaLastBackup. Its precise msdb object access
+--     is dbatools-version dependent; validate that cmdlet's actual SQL reads
+--     and grant only required SELECT access. Do not grant an Agent role.
+--   * Get-OpsLongRunningQueries/Get-OpsBlockingSessions: server-wide DMV/state
+--     permission as above, with function output filtered to approved DBs;
+--     statement text and session identity are sensitive.
+--   * Get-OpsDiskSpace: database-file volume data for approved databases, via
+--     sys.dm_os_volume_stats; no Windows administrator/WMI query is used.
+--   * Get-OpsFailedJobs: SELECT only on the two msdb objects below.
+--   * Get-OpsServerHealthReport: no additional SQL grant; aggregates the
+--     preceding read-only Ops functions and writes a local HTML report.
+--
+-- Failed SQL Agent job summaries:
+-- Get-OpsFailedJobs now uses a fixed parameterized SELECT over only the job
+-- identity and summary history tables. It does not use SQLAgentReaderRole,
+-- which also gives SQLAgentUserRole actions over jobs owned by the member.
+-- USE [msdb];
+-- CREATE USER [DOMAIN\svc_ai_dba_dev] FOR LOGIN [DOMAIN\svc_ai_dba_dev];
+-- CREATE ROLE [OpsJobHistoryReader];
+-- GRANT SELECT ON OBJECT::dbo.sysjobs (job_id, name) TO [OpsJobHistoryReader];
+-- GRANT SELECT ON OBJECT::dbo.sysjobhistory
+--     (job_id, step_id, run_status, run_date, run_time, run_duration, message)
+--     TO [OpsJobHistoryReader];
+-- ALTER ROLE [OpsJobHistoryReader] ADD MEMBER [DOMAIN\svc_ai_dba_dev];
+-- Reason: column-level SELECT is limited to the join key, job name, outcome,
+-- timestamp, duration, and message columns referenced by the query. It selects
+-- only step_id=0 failed summaries in its configured lookback and cannot
+-- start/stop/create jobs. SQL Server supports column-level SELECT grants;
+-- verify effective access on the deployed SQL Server version before use.
+--
+-- Backup permission, only when the explicit Backup-OpsDatabase operation is
+-- separately approved and deployed:
+-- Repeat only in each approved non-system user database. Full and
+-- Differential use BACKUP DATABASE. Add BACKUP LOG only when Log backup is
+-- explicitly enabled. Backup-DbaDatabase -Checksum is enabled; -Verify is not.
+-- The function checks dbatools' BackupComplete result and makes no independent
+-- restore/restore-verify call. No CREATE DATABASE, CREATE ANY DATABASE,
+-- dbcreator, db_backupoperator, or db_owner permission is required by this
+-- implementation. Independent backup validation must run as a separate,
+-- explicitly privileged process and is outside this automation identity.
+-- USE [ApprovedLabDatabase];
+-- GRANT BACKUP DATABASE TO [DOMAIN\svc_ai_dba_dev];
+-- -- Add only when Log backups are explicitly approved:
+-- GRANT BACKUP LOG TO [DOMAIN\svc_ai_dba_dev];
+-- Reason: SQL Server documents these permissions for backup. Direct grants
+-- avoid db_backupoperator's additional CHECKPOINT permission. SQL Server's
+-- service account (not this login) needs write access to the configured backup
+-- destination. The backup function still requires explicit human approval.
+--
+-- Scope and verification notes:
+--   * Effective database access also depends on guest access, inherited grants,
+--     ownership, and public permissions. Audit effective access before
+--     claiming isolation even though Ops functions enforce ApprovedDatabases.
+--   * SQL Server normally exposes database names through public metadata; do
+--     not interpret inventory visibility as permission to read or modify data.
+--   * The login can connect through master, and the documented narrow DMV
+--     grants use a master principal. msdb has a SELECT-only custom role for
+--     job summaries (and any separately verified backup-history SELECT grants).
+--     No permission here authorizes system-database data/DDL changes, restores,
+--     or destructive operations.
+--   * Use a distinct identity and approved database list in Development, Test,
+--     UAT, and Production. Review effective permissions, inherited roles,
+--     guest access, and database ownership; test read operations before use.
+--   * Never execute this documentation file. Provisioning and permission
+--     changes require explicit human approval and an independently reviewed
+--     deployment script.

@@ -1,0 +1,21 @@
+{
+  "$schema": "./monitoring.workflow.schema.json",
+  "SchemaVersion": 1,
+  "Environment": "Development",
+  "EnvironmentId": "Development-Lab",
+  "SqlInstance": "MSSQL-VM1",
+  "AllowedSqlInstances": ["MSSQL-VM1"],
+  "EvaluationPolicyPath": "monitoring.evaluation.example.json",
+  "ReportOutputDirectory": "../Reports/Monitoring",
+  "EnabledChecks": [
+    "database_inventory",
+    "database_health",
+    "database_size",
+    "backup_status",
+    "disk_space",
+    "failed_jobs",
+    "blocking_sessions",
+    "long_running_queries"
+  ],
+  "ArtifactFormats": ["text", "html", "json"]
+}

@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/dba-ai-assistant/monitoring.workflow.schema.json",
+  "title": "DBA Monitoring Workflow Configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "SchemaVersion",
+    "Environment",
+    "EnvironmentId",
+    "SqlInstance",
+    "AllowedSqlInstances",
+    "EvaluationPolicyPath",
+    "ReportOutputDirectory",
+    "EnabledChecks",
+    "ArtifactFormats"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "SchemaVersion": { "type": "integer", "const": 1 },
+    "Environment": { "enum": ["Development", "Test", "UAT", "Production", "Lab"] },
+    "EnvironmentId": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$" },
+    "SqlInstance": { "type": "string", "minLength": 1, "maxLength": 256, "pattern": "^[a-zA-Z0-9_.\\\\,:-]+$" },
+    "AllowedSqlInstances": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1, "maxLength": 256, "pattern": "^[a-zA-Z0-9_.\\\\,:-]+$" }
+    },
+    "EvaluationPolicyPath": { "type": "string", "minLength": 1 },
+    "ReportOutputDirectory": { "type": "string", "minLength": 1 },
+    "EnabledChecks": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "database_inventory",
+          "database_health",
+          "database_size",
+          "backup_status",
+          "disk_space",
+          "failed_jobs",
+          "blocking_sessions",
+          "long_running_queries"
+        ]
+      }
+    },
+    "ArtifactFormats": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "enum": ["text", "html", "json"] }
+    }
+  }
+}

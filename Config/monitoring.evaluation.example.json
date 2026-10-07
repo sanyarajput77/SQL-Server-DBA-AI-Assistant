@@ -1,0 +1,24 @@
+{
+  "$schema": "./monitoring.evaluation.schema.json",
+  "SchemaVersion": 1,
+  "DatabaseStateSeverity": {
+    "Normal": "HEALTHY",
+    "Restoring": "WARNING",
+    "Recovering": "WARNING",
+    "Offline": "CRITICAL",
+    "Emergency": "CRITICAL",
+    "Suspect": "CRITICAL"
+  },
+  "DatabaseHealthSeverity": {
+    "Healthy": "HEALTHY",
+    "Warning": "WARNING",
+    "Critical": "CRITICAL"
+  },
+  "BackupAgeCriticalMultiplier": 2.0,
+  "DiskFreeCriticalPercent": 5.0,
+  "FailedJobsWarningCount": 1,
+  "FailedJobsCriticalCount": 5,
+  "BlockingWarningCount": 1,
+  "BlockingCriticalCount": 5,
+  "LongRunningQueryCriticalMultiplier": 5.0
+}

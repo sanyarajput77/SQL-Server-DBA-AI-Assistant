@@ -1,0 +1,37 @@
+{
+  "Environment": "Test",
+  "EnvironmentId": "Test",
+  "ApprovedInstances": [
+    "TEST-SQL-01",
+    "TEST-SQL-02"
+  ],
+  "DefaultInstance": "TEST-SQL-01",
+  "TrustServerCertificate": false,
+  "BackupDirectory": "\\\\test-storage.domain.local\\sqlbackups\\test",
+  "ReportDirectory": "D:\\DBA-Reports\\Test",
+  "LogDirectory": "D:\\DBA-Logs\\Test",
+  "Thresholds": {
+    "BackupWarningHours": 24,
+    "DiskWarningPercentFree": 15.0,
+    "LongRunningQuerySeconds": 60,
+    "FailedJobsHours": 24
+  },
+  "Timeouts": {
+    "QueryTimeoutSeconds": 30,
+    "ConnectionTimeoutSeconds": 15
+  },
+  "ApprovedDatabases": [
+    "TestAppDB"
+  ],
+  "ProtectedDatabases": [
+    "master",
+    "model",
+    "msdb",
+    "tempdb"
+  ],
+  "BackupPolicy": {
+    "Enabled": false,
+    "AllowedTypes": [],
+    "ApprovalRequired": true
+  }
+}

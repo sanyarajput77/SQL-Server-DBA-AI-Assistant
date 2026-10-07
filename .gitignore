@@ -1,0 +1,38 @@
+# Antigravity & IDE
+.gemini/
+.idea/
+.vscode/
+
+# AI / local tool configuration
+.codex/
+.cline/
+
+# Python virtual environment & cache
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs & temporary run outputs
+Logs/
+Reports/
+Backups/
+scratch/
+
+# Local configuration
+Config/config.development.json
+Config/config.test.json
+Config/config.uat.json
+Config/config.production.json
+
+# Sensitive configuration / credentials
+Config/*.secret.json
+*.pfx
+*.key
+*.cer
+.env
+*.env
+
+# Test output
+TestResults*.xml
+pester*.xml
